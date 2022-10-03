@@ -1,0 +1,5 @@
+/.vscode
+/compiler/include/masiina/compiler/config.hpp
+/build
+/cget
+/runtime/include/masiina/runtime/config.hpp
