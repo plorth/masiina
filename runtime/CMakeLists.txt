@@ -48,15 +48,21 @@ TARGET_INCLUDE_DIRECTORIES(
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../cget/include>
 )
 
-SET_TARGET_PROPERTIES(
+TARGET_LINK_DIRECTORIES(
   masiina-runtime
-  PROPERTIES
-    OUTPUT_NAME masiina
+  PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/cget/lib
 )
 
 TARGET_LINK_LIBRARIES(
   masiina-runtime
   plorth
+)
+
+SET_TARGET_PROPERTIES(
+  masiina-runtime
+  PROPERTIES
+    OUTPUT_NAME masiina
 )
 
 INSTALL(
