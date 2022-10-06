@@ -29,11 +29,14 @@
 #include <cstdio>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace masiina::compiler::io
 {
   std::optional<std::string> read_file_contents(const std::string& path);
-  void write_uint16(FILE* output, std::uint16_t number);
+  void write_uint16(std::vector<unsigned char>& output, std::uint16_t number);
   void write_uint32(FILE* output, std::uint32_t number);
+  void write_uint32(std::vector<unsigned char>& output, std::uint32_t number);
   void write_string(FILE* output, const std::u32string& str);
+  void write_string(std::vector<unsigned char>& output, const std::u32string& str);
 }

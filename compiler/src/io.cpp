@@ -65,10 +65,10 @@ namespace masiina::compiler::io
   }
 
   void
-  write_uint16(FILE* output, std::uint16_t number)
+  write_uint16(std::vector<unsigned char>& output, std::uint16_t number)
   {
-    std::fputc((number >> 0) & 0xff, output);
-    std::fputc((number >> 8) & 0xff, output);
+    output.push_back(static_cast<unsigned char>((number >> 0) & 0xff));
+    output.push_back(static_cast<unsigned char>((number >> 8) & 0xff));
   }
 
   void
@@ -81,6 +81,15 @@ namespace masiina::compiler::io
   }
 
   void
+  write_uint32(std::vector<unsigned char>& output, std::uint32_t number)
+  {
+    output.push_back(static_cast<unsigned char>((number >> 0) & 0xff));
+    output.push_back(static_cast<unsigned char>((number >> 8) & 0xff));
+    output.push_back(static_cast<unsigned char>((number >> 16) & 0xff));
+    output.push_back(static_cast<unsigned char>((number >> 24) & 0xff));
+  }
+
+  void
   write_string(FILE* output, const std::u32string& str)
   {
     const auto encoded_str = peelo::unicode::encoding::utf8::encode(str);
@@ -89,6 +98,18 @@ namespace masiina::compiler::io
     for (const auto& c : encoded_str)
     {
       std::fputc(static_cast<unsigned char>(c), output);
+    }
+  }
+
+  void
+  write_string(std::vector<unsigned char>& output, const std::u32string& str)
+  {
+    const auto encoded_str = peelo::unicode::encoding::utf8::encode(str);
+
+    write_uint32(output, static_cast<std::uint32_t>(encoded_str.length()));
+    for (const auto& c : encoded_str)
+    {
+      output.push_back(static_cast<unsigned char>(c));
     }
   }
 }

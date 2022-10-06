@@ -25,28 +25,27 @@
  */
 #pragma once
 
-#include <masiina/compiler/symbol-map.hpp>
-#include <plorth/parser/ast.hpp>
+#include <cstdint>
+#include <cstdio>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace masiina::compiler
 {
-  class module
+  class symbol_map
   {
   public:
-    using value_type = std::shared_ptr<plorth::parser::ast::token>;
-    using container_type = std::vector<value_type>;
+    explicit symbol_map();
+    symbol_map(const symbol_map& that);
+    symbol_map& operator=(const symbol_map& that);
 
-    explicit module(
-      const std::u32string& name = std::u32string(),
-      const container_type& tokens = container_type()
-    );
-    module(const module& that);
-    module& operator=(const module& that);
+    std::uint32_t add(const std::u32string& str);
 
-    std::vector<unsigned char> compile(class symbol_map& symbol_map) const;
+    void write(FILE* output) const;
 
   private:
-    std::u32string m_name;
-    container_type m_tokens;
+    std::vector<std::u32string> m_list;
+    std::unordered_map<std::u32string, std::uint32_t> m_map;
   };
 }

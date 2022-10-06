@@ -18,11 +18,10 @@ CONFIGURE_FILE(
 
 ADD_EXECUTABLE(
   masiina-compiler
-  src/compiler.cpp
-  src/instruction.cpp
   src/io.cpp
   src/main.cpp
   src/module.cpp
+  src/symbol-map.cpp
   src/unit.cpp
 )
 
