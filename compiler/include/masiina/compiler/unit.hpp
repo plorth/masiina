@@ -25,12 +25,10 @@
  */
 #pragma once
 
-#include <cstdint>
 #include <optional>
-#include <unordered_map>
 
 #include <masiina/compiler/module.hpp>
-#include <plorth/parser/ast.hpp>
+#include <masiina/compiler/symbol-map.hpp>
 
 namespace masiina::compiler
 {
@@ -38,25 +36,15 @@ namespace masiina::compiler
   {
   public:
     explicit unit();
+    unit(const unit& that);
+    unit& operator=(const unit& that);
 
     std::optional<std::string> compile_file(const std::string& path);
 
-    std::uint32_t add_string_constant(const std::u32string& str);
-
-    void write(FILE* output) const;
-
-  protected:
-    void compile(
-      const std::u32string& module_name,
-      const std::vector<std::shared_ptr<plorth::parser::ast::token>>& tokens
-    );
+    void write(FILE* output);
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(unit);
-
-  private:
-    std::vector<std::u32string> m_symbol_list;
-    std::unordered_map<std::u32string, std::uint32_t> m_symbol_map;
-    std::vector<std::shared_ptr<module>> m_modules;
+    symbol_map m_symbol_map;
+    std::vector<module> m_modules;
   };
 }

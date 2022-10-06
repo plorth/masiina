@@ -23,30 +23,50 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
-
+#include <masiina/compiler/io.hpp>
 #include <masiina/compiler/symbol-map.hpp>
-#include <plorth/parser/ast.hpp>
 
 namespace masiina::compiler
 {
-  class module
+  symbol_map::symbol_map() {}
+
+  symbol_map::symbol_map(const symbol_map& that)
+    : m_list(that.m_list)
+    , m_map(that.m_map) {}
+
+  symbol_map&
+  symbol_map::operator=(const symbol_map& that)
   {
-  public:
-    using value_type = std::shared_ptr<plorth::parser::ast::token>;
-    using container_type = std::vector<value_type>;
+    m_list = that.m_list;
+    m_map = that.m_map;
 
-    explicit module(
-      const std::u32string& name = std::u32string(),
-      const container_type& tokens = container_type()
-    );
-    module(const module& that);
-    module& operator=(const module& that);
+    return *this;
+  }
 
-    std::vector<unsigned char> compile(class symbol_map& symbol_map) const;
+  std::uint32_t
+  symbol_map::add(const std::u32string& str)
+  {
+    const auto iterator = m_map.find(str);
+    std::uint32_t index;
 
-  private:
-    std::u32string m_name;
-    container_type m_tokens;
-  };
+    if (iterator != std::end(m_map))
+    {
+      return iterator->second;
+    }
+    index = static_cast<std::uint32_t>(m_list.size());
+    m_list.push_back(str);
+    m_map[str] = index;
+
+    return index;
+  }
+
+  void
+  symbol_map::write(FILE* output) const
+  {
+    io::write_uint32(output, static_cast<std::uint32_t>(m_list.size()));
+    for (const auto& str : m_list)
+    {
+      io::write_string(output, str);
+    }
+  }
 }

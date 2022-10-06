@@ -36,6 +36,19 @@ namespace masiina::compiler
 {
   unit::unit() {}
 
+  unit::unit(const unit& that)
+    : m_symbol_map(that.m_symbol_map)
+    , m_modules(that.m_modules) {}
+
+  unit&
+  unit::operator=(const unit& that)
+  {
+    m_symbol_map = that.m_symbol_map;
+    m_modules = that.m_modules;
+
+    return *this;
+  }
+
   std::optional<std::string>
   unit::compile_file(const std::string& path)
   {
@@ -69,12 +82,7 @@ namespace masiina::compiler
 
     if (result)
     {
-      const auto& tokens = result.value();
-
-      if (tokens)
-      {
-        compile(decoded_path, *tokens);
-      }
+      m_modules.emplace_back(decoded_path, *result.value());
     } else {
       const auto& error = result.error();
       std::string message;
@@ -99,26 +107,11 @@ namespace masiina::compiler
     return std::nullopt;
   }
 
-  std::uint32_t
-  unit::add_string_constant(const std::u32string& str)
-  {
-    const auto index = m_symbol_map.find(str);
-    std::uint32_t new_index;
-
-    if (index != std::end(m_symbol_map))
-    {
-      return index->second;
-    }
-    new_index = static_cast<std::uint32_t>(m_symbol_list.size());
-    m_symbol_list.push_back(str);
-    m_symbol_map[str] = new_index;
-
-    return new_index;
-  }
-
   void
-  unit::write(FILE* output) const
+  unit::write(FILE* output)
   {
+    std::vector<std::vector<unsigned char>> modules;
+
     // Magic number.
     std::fputs("RjL", output);
 
@@ -127,18 +120,24 @@ namespace masiina::compiler
     std::fputc(MASIINA_VERSION_MINOR, output);
     std::fputc(MASIINA_VERSION_MAJOR, output);
 
-    // Symbol table.
-    io::write_uint32(output, static_cast<std::uint32_t>(m_symbol_list.size()));
-    for (const auto& symbol : m_symbol_list)
-    {
-      io::write_string(output, symbol);
-    }
-
-    // All modules contained in the compilation unit.
-    io::write_uint32(output, static_cast<std::uint32_t>(m_modules.size()));
     for (const auto& module : m_modules)
     {
-      module->write(output);
+      modules.push_back(module.compile(m_symbol_map));
+    }
+
+    // Symbol table.
+    m_symbol_map.write(output);
+
+    // All modules contained in the compilation unit.
+    io::write_uint32(output, static_cast<std::uint32_t>(modules.size()));
+    for (const auto& module : modules)
+    {
+      std::fwrite(
+        static_cast<const void*>(module.data()),
+        module.size(),
+        1,
+        output
+      );
     }
   }
 }
